@@ -19,22 +19,25 @@ def get_equations(filename: str) -> list[Equation]:
   return equations
 
 
-def sum_valid(eqations: list[Equation]) -> int:
+def sum_valid(eqations: list[Equation], operators) -> int:
   sum = 0
   for equation in eqations:
-    if is_valid(equation):
+    if is_valid(equation, operators):
       sum += equation.result
   return sum
 
 
-def is_valid(equation: Equation) -> bool:
-  operator_combinations = product([add, mul], repeat=len(equation.elements) - 1)
+def is_valid(equation: Equation, operators) -> bool:
+  operator_combinations = product(operators, repeat=len(equation.elements) - 1)
 
   for operator_set in operator_combinations:
     result = equation.elements[0]
 
     for i, op in enumerate(operator_set):
-      result = op(result, equation.elements[i+1])
+      if isinstance(op, str):
+        result = int(str(result) + str(equation.elements[i+1]))
+      else:
+        result = op(result, equation.elements[i+1])
 
     if equation.result == result:
       return True
@@ -46,11 +49,18 @@ def main():
   equations = get_equations('input.txt')
 
   # Part 1
-  result = sum_valid(exampel_quations)
+  result = sum_valid(exampel_quations, [add, mul])
   assert result == 3749, f"Expected 3749, but was {result}."
 
-  result = sum_valid(equations)
+  result = sum_valid(equations, [add, mul])
   print(f"Part 1: Result is {result}")
+
+  # Part 2
+  result = sum_valid(exampel_quations, [add, mul, '||'])
+  assert result == 11387, f"Expected 11387, but was {result}."
+
+  result = sum_valid(equations, [add, mul, '||'])
+  print(f"Part 2: Result is {result}")
 
 if __name__ == "__main__":
   main()
