@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from itertools import permutations, product
+from itertools import product
 from operator import add, mul
 
 @dataclass
