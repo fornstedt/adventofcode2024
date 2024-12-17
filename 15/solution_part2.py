@@ -26,7 +26,7 @@ class Warehouse:
     gps_sum = 0
     for y, row in enumerate(self._map):
       for x, value in enumerate(row):
-        if value == "O":
+        if value == "[":
           gps_sum += y * 100 + x
     return gps_sum
 
@@ -34,7 +34,6 @@ class Warehouse:
     for move in self.moves:
       if self.move(self.position, move) == True:
         self.position += move
-        print_map(self._map)
 
   def can_move(self, position: np.ndarray, direction: np.ndarray) -> bool:
     value = self.map(position)
@@ -49,9 +48,8 @@ class Warehouse:
     new_position = position + direction
 
     if self.can_move(new_position, direction) == True:
-      if is_up_down and has_sibling and \
-         self.can_move(new_position + SIBLING[value], direction) == True:
-          return True
+      if is_up_down and has_sibling:
+         return True if self.can_move(new_position + SIBLING[value], direction) == True else False
       else:
         return True
 
@@ -61,23 +59,21 @@ class Warehouse:
     if not self.can_move(position, direction):
       return False
 
-
-    new_position = position + direction
-    is_up_down = (direction == DIRECTION["^"]).all() or (direction == DIRECTION["v"]).all()
-    next_type = self.map(new_position)
-    has_sibling = next_type in "[]"
     self.do_movement(position, direction)
-
-    if is_up_down and has_sibling:
-      sibling_position = new_position + SIBLING[next_type]
-      self.do_movement(sibling_position, direction)
-
     return True
 
   def do_movement(self, position: np.ndarray, direction: np.ndarray):
     new_position = position + direction
+    is_up_down = (direction == DIRECTION["^"]).all() or (direction == DIRECTION["v"]).all()
+    next_type = self.map(new_position)
+    has_sibling = next_type in "[]"
+
     if self.map(new_position) != '.':
       self.do_movement(new_position, direction)
+      if is_up_down and has_sibling:
+        sibling_position = new_position + SIBLING[next_type]
+        self.do_movement(sibling_position, direction)
+
     self._map[new_position[Y]][new_position[X]] = self.map(position)
     self._map[position[Y]][position[X]] = "."
 
@@ -114,7 +110,6 @@ def print_map(map: list[str]) -> None:
 
 def main():
   warehouse = parse_data('example.txt')
-  print_map(warehouse._map)
   warehouse.run()
 
   result = warehouse.gps_sum
